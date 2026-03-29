@@ -511,11 +511,11 @@
     <script src="js/app.js"></script>
 
 
-                     <!-- ====================== 最終加強版：所有宮位（包括9宮）必顯示 Hover ====================== -->
+              <!-- ====================== 最終穩定版：轉盤 + 即時 Hover（9宮必顯示） ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
 
     const xiangYiData = {
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
@@ -554,7 +554,7 @@
         document.body.appendChild(tooltip);
     }
 
-    // 超強健版 Hover（使用 event delegation + 更寬鬆匹配）
+    // 強健版 Hover（使用 delegation + 每次轉盤後重新綁定）
     function addFastHover() {
         const grid = document.querySelector('.pan-grid');
         if (!grid) return;
@@ -566,17 +566,11 @@
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
 
-            // 更強匹配：逐行 + 關鍵字
-            const lines = text.split(/\n|\s+/);
-            for (let line of lines) {
-                line = line.trim();
-                for (let key in xiangYiData) {
-                    if (line.includes(key)) {
-                        tooltipText = xiangYiData[key];
-                        break;
-                    }
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;
                 }
-                if (tooltipText) break;
             }
 
             if (tooltipText) {
@@ -592,7 +586,7 @@
         });
     }
 
-    // 轉盤功能（保持不變）
+    // 轉盤功能
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
@@ -601,6 +595,7 @@
     function rotateSequence() {
         if (originalGongs.length === 0) initGongs();
         rotateCount = (rotateCount + 1) % 8;
+
         const gongs = document.querySelectorAll('.pan-grid .gong');
         const temp = [...originalGongs];
 
@@ -622,6 +617,9 @@
             gong.innerHTML = temp[index];
         });
 
+        // 關鍵：每次轉盤後重新綁定 Hover
+        addFastHover();
+
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
 
@@ -631,6 +629,7 @@
         gongs.forEach((gong, index) => {
             gong.innerHTML = originalGongs[index];
         });
+        addFastHover();   // 重置後也重新綁定
         alert('✅ 轉盤已完全重置');
     }
 
@@ -641,7 +640,7 @@
         addFastHover();
     });
 </script>
-<!-- ====================== 最終加強版結束 ====================== -->
+<!-- ====================== 最終穩定版結束 ====================== -->
                                 
 </body>
 
