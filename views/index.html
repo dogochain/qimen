@@ -509,67 +509,12 @@
     <!-- Bootstrap JavaScript -->
     <script src="js/bootstrap.min.js"></script>
     <script src="js/app.js"></script>
-
-<!-- ====================== 最終版：外圍8宮順時針轉動 + 中宮固定 ====================== -->
+<!-- ====================== 最終乾淨版：轉盤 + 快速 Hover ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
 
-    // 外圍8宮的順時針順序（從右上角2宮開始）
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 2→7→6→1→8→3→4→9
-
-    function initGongs() {
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
-    }
-
-    function rotateSequence() {
-        if (originalGongs.length === 0) initGongs();
-        rotateCount = (rotateCount + 1) % 8;
-
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        const temp = [...originalGongs];
-
-        // 只處理外圍8宮
-        let outerValues = outerOrder.map(num => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            return originalGongs[index];
-        });
-
-        // 順時針旋轉外圍
-        for (let i = 0; i < rotateCount; i++) {
-            outerValues.unshift(outerValues.pop());
-        }
-
-        // 放回外圍宮位
-        outerOrder.forEach((num, i) => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            if (index !== -1) temp[index] = outerValues[i];
-        });
-
-        // 寫回九宮格
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = temp[index];
-        });
-
-        alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
-    }
-
-    function resetRotate() {
-        rotateCount = 0;
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = originalGongs[index];
-        });
-        alert('✅ 轉盤已完全重置');
-    }
-
-    window.onload = initGongs;
-</script>
-<!-- ====================== 最終版結束 ====================== -->
-                                
-<!-- ====================== 超快版 Hover 象義（即時顯示） ====================== -->
-<script>
     const xiangYiData = {
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
         "生門": "主錢財、收入、房產、住宅、土地（吉）",
@@ -603,20 +548,14 @@
 
     function createTooltip() {
         tooltip = document.createElement('div');
-        tooltip.style.cssText = `
-            position:fixed; padding:8px 12px; background:#1a1a1a; color:#ffd700; 
-            border-radius:6px; font-size:14px; pointer-events:none; z-index:9999; 
-            box-shadow:0 4px 15px rgba(0,0,0,0.7); display:none; max-width:260px;
-        `;
+        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none;`;
         document.body.appendChild(tooltip);
     }
 
     function addFastHover() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
-
         gongs.forEach(gong => {
             const text = gong.innerText || gong.textContent || '';
-
             let tooltipText = '';
             for (let key in xiangYiData) {
                 if (text.includes(key)) {
@@ -624,17 +563,14 @@
                     break;
                 }
             }
-
             if (tooltipText) {
                 gong.style.cursor = 'help';
-
-                gong.addEventListener('mouseenter', (e) => {
+                gong.addEventListener('mousemove', (e) => {
                     tooltip.textContent = tooltipText;
-                    tooltip.style.left = (e.clientX + 15) + 'px';
-                    tooltip.style.top = (e.clientY + 15) + 'px';
+                    tooltip.style.left = (e.clientX + 18) + 'px';
+                    tooltip.style.top = (e.clientY + 18) + 'px';
                     tooltip.style.display = 'block';
                 });
-
                 gong.addEventListener('mouseleave', () => {
                     tooltip.style.display = 'none';
                 });
@@ -642,14 +578,51 @@
         });
     }
 
-    // 頁面載入後執行
+    // 轉盤功能
+    function initGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
+    }
+
+    function rotateSequence() {
+        if (originalGongs.length === 0) initGongs();
+        rotateCount = (rotateCount + 1) % 8;
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        const temp = [...originalGongs];
+        let outerValues = outerOrder.map(num => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            return originalGongs[index];
+        });
+        for (let i = 0; i < rotateCount; i++) {
+            outerValues.unshift(outerValues.pop());
+        }
+        outerOrder.forEach((num, i) => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            if (index !== -1) temp[index] = outerValues[i];
+        });
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = temp[index];
+        });
+        alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
+    }
+
+    function resetRotate() {
+        rotateCount = 0;
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = originalGongs[index];
+        });
+        alert('✅ 轉盤已完全重置');
+    }
+
+    // 單一 load 事件，同時執行所有功能
     window.addEventListener('load', () => {
-        initGongs();     // 轉盤功能
-        createTooltip(); // 建立 tooltip
-        addFastHover();  // 即時 Hover
+        initGongs();
+        createTooltip();
+        addFastHover();
     });
 </script>
-<!-- ====================== 超快版 Hover 結束 ====================== -->
+<!-- ====================== 最終版結束 ====================== -->
                                 
 </body>
 
