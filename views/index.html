@@ -511,11 +511,11 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 全新純 CSS Hover 版（最穩定） ====================== -->
+<!-- ====================== 最終極簡穩定版（native title + 簡化轉盤） ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
 
     const xiangYiData = {
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
@@ -546,27 +546,25 @@
         "九天": "主天空、打鬥、行軍打仗、上升、遠走高飛（吉）"
     };
 
-    function setTooltipData() {
+    function setTitleOnGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         gongs.forEach(gong => {
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
 
-            // 精準優先匹配
-            for (let key of Object.keys(xiangYiData)) {
+            for (let key in xiangYiData) {
                 if (text.includes(key)) {
                     tooltipText = xiangYiData[key];
                     break;
                 }
             }
-
             if (tooltipText) {
-                gong.setAttribute('data-tooltip', tooltipText);
+                gong.setAttribute('title', tooltipText);
             }
         });
     }
 
-    // 轉盤功能
+    // 簡化轉盤功能（使用 innerHTML，但每次轉動後立即重新設定 title）
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
@@ -597,7 +595,7 @@
             gong.innerHTML = temp[index];
         });
 
-        setTooltipData();   // 轉盤後立即重新設定 tooltip
+        setTitleOnGongs();   // 轉盤後立即重新設定 title
 
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
@@ -608,43 +606,17 @@
         gongs.forEach((gong, index) => {
             gong.innerHTML = originalGongs[index];
         });
-        setTooltipData();
+        setTitleOnGongs();
         alert('✅ 轉盤已完全重置');
     }
 
     // 頁面載入後執行
     window.addEventListener('load', () => {
         initGongs();
-        setTooltipData();
+        setTitleOnGongs();   // 初始設定 title
     });
 </script>
-
-<!-- ====================== 純 CSS Tooltip 樣式 ====================== -->
-<style>
-    .pan-grid .gong[data-tooltip] {
-        position: relative;
-        cursor: help;
-    }
-
-    .pan-grid .gong[data-tooltip]:hover::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #1a1a1a;
-        color: #ffd700;
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-size: 14px;
-        white-space: nowrap;
-        z-index: 99999;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.7);
-        pointer-events: none;
-        opacity: 1;
-    }
-</style>
-<!-- ====================== 最終純 CSS 版結束 ====================== -->
+<!-- ====================== 最終穩定版結束 ====================== -->
                                 
 </body>
 
