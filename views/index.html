@@ -512,29 +512,6 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/app.js"></script>
 
-  <!-- ====================== 新增：轉盤互動 JavaScript ====================== -->
-<script>
-let rotateState = { tian: 0, men: 0, xing: 0 };
-
-function rotateLayer(layer) {
-    rotateState[layer] = (rotateState[layer] + 1) % 9;
-    applyRotation();
-    alert(`✅ 已順宮轉動 ${layer === 'tian' ? '天盤' : layer === 'men' ? '八門' : '九星'} 1 宮！`);
-}
-
-function resetRotate() {
-    rotateState = { tian: 0, men: 0, xing: 0 };
-    applyRotation();
-    alert('✅ 轉盤已重置');
-}
-
-function applyRotation() {
-    console.log('🔄 轉盤狀態更新：', rotateState);
-    // 暫時先 console log，下一輪我會教你真正讓九宮格轉動
-}
-</script>
-<!-- ====================== JavaScript 結束 ====================== -->
-
 
 <!-- ====================== 轉盤視覺效果 ====================== -->
 <script>
