@@ -509,7 +509,9 @@
     <!-- Bootstrap JavaScript -->
     <script src="js/bootstrap.min.js"></script>
     <script src="js/app.js"></script>
-<!-- ====================== 最終乾淨版：轉盤 + 快速 Hover ====================== -->
+
+
+                                <!-- ====================== 最終優化版：轉盤 + 即時 Hover（所有宮位正常） ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
@@ -548,21 +550,29 @@
 
     function createTooltip() {
         tooltip = document.createElement('div');
-        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none;`;
+        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none; white-space:pre-wrap;`;
         document.body.appendChild(tooltip);
     }
 
     function addFastHover() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         gongs.forEach(gong => {
-            const text = gong.innerText || gong.textContent || '';
+            const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
-            for (let key in xiangYiData) {
-                if (text.includes(key)) {
-                    tooltipText = xiangYiData[key];
-                    break;
+
+            // 更強健匹配（逐行檢查 + 優先八門）
+            const lines = text.split('\n');
+            for (let line of lines) {
+                line = line.trim();
+                for (let key in xiangYiData) {
+                    if (line.includes(key)) {
+                        tooltipText = xiangYiData[key];
+                        break;
+                    }
                 }
+                if (tooltipText) break;
             }
+
             if (tooltipText) {
                 gong.style.cursor = 'help';
                 gong.addEventListener('mousemove', (e) => {
@@ -578,7 +588,7 @@
         });
     }
 
-    // 轉盤功能
+    // 轉盤功能（保持不變）
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
@@ -615,7 +625,7 @@
         alert('✅ 轉盤已完全重置');
     }
 
-    // 單一 load 事件，同時執行所有功能
+    // 一次性執行所有功能
     window.addEventListener('load', () => {
         initGongs();
         createTooltip();
