@@ -568,11 +568,10 @@
 </script>
 <!-- ====================== 最終版結束 ====================== -->
                                 
-<!-- ====================== Next Step：Hover 象義 + 四害標籤 + 美化 ====================== -->
+<!-- ====================== 優化版 Hover 象義（更快 + 精準） ====================== -->
 <script>
-    // Hover 象義資料（來自你提供的 PDF）
     const xiangYiData = {
-        // 八門
+        // 八門（優先匹配）
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
         "生門": "主錢財、收入、房產、住宅、土地（吉）",
         "開門": "主工作、公司、經營、貿易（吉）",
@@ -582,59 +581,80 @@
         "死門": "主不開心、死亡、不動、結束、穩固、執著（凶）",
         "驚門": "主驚慌、擔心、吃驚、官非、口舌是非（凶）",
 
-        // 九星（簡化版，可再擴充）
-        "天蓬": "主膽大、妄為、大賊、聰明、好色、大貪（凶）",
-        "天任": "主擔當、任勞任怨、忠厚、保守（吉）",
-        "天沖": "主沖動、易怒、快速、猛烈、矛盾（凶）",
-        "天輔": "主輔佐、指導、保護、靠山、仁慈幫助（吉）",
-        "天英": "主英俊、漂亮、英雄主義、智勇雙全（吉）",
-        "天芮": "主疾病、問題、學習、桃花、修道（凶）",
-        "天柱": "主破壞、刑傷、好鬥、力挽狂瀾（凶）",
-        "天心": "主核心、管理能力、領袖、政治、醫病（吉）",
+        // 九星
+        "天蓬": "主膽大、妄為、大賊、聰明、智慧、好色、大貪（凶）",
+        "天任": "主擔當、承受、任勞任怨、忠厚、保守、謙虛（吉）",
+        "天沖": "主沖動、易怒、沖擊、快速、猛烈、矛盾、鬥爭（凶）",
+        "天輔": "主輔佐、指導、祝福、保護、靠山、關愛、仁慈幫助（吉）",
+        "天英": "主英俊、漂亮、英雄主義、智勇雙全、快速、卓越（吉）",
+        "天芮": "主疾病、問題、錯誤、學習、桃花、學生、老師、修道（凶）",
+        "天柱": "主支撐、破壞、刑傷、好鬥、力挽狂瀾（凶）",
+        "天心": "主核心、管理能力、本領高強、領袖、政治、醫病（吉）",
 
         // 八神
-        "值符": "主官員、名貴高級、權力、得神庇佑（吉）",
-        "騰蛇": "主變化、反覆、纏繞、虛假、驚恐（凶）",
-        "太陰": "主護佑、陰德、喜慶、策劃、隱藏（吉）",
-        "六合": "主感情、婚姻、歡樂、合作、眾多（吉）",
-        "白虎": "主辛苦、受傷、爭鬥、官司、霸氣（凶）",
-        "玄武": "主虛假、頭暈、糊塗、風流、小賊（凶）",
-        "九地": "主長久、地下、穩定、不動、慢（吉）",
-        "九天": "主天空、打鬥、上升、遠走高飛（吉）"
+        "值符": "主官員、名貴高級、權力、得神庇佑、德高望重（吉）",
+        "騰蛇": "主變化、反覆、纏繞、夢、虛假、驚恐（凶）",
+        "太陰": "主護佑、陰德、喜慶、策劃、隱藏、陰謀詭計（吉）",
+        "六合": "主感情、婚姻、歡樂、祥和、合作（吉）",
+        "白虎": "主辛苦、受傷、爭鬥、困難、官司是非、霸氣（凶）",
+        "玄武": "主虛假、不可靠、頭暈、糊塗、風流、小賊星（凶）",
+        "九地": "主長久、緩慢、地下、柔順、穩定、不動（吉）",
+        "九天": "主天空、打鬥、行軍打仗、上升、遠走高飛（吉）"
     };
 
-    function addHoverAndTags() {
+    function addHoverEffect() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
-        
-        gongs.forEach(gong => {
-            // 找出宮內文字
-            const text = gong.innerText || gong.textContent;
-            
-            // 簡單匹配象義
-            let tooltip = '';
-            Object.keys(xiangYiData).forEach(key => {
-                if (text.includes(key)) tooltip = xiangYiData[key];
-            });
 
-            if (tooltip) {
-                gong.setAttribute('title', tooltip);   // Hover 顯示
-                gong.style.cursor = 'help';
+        gongs.forEach(gong => {
+            const text = gong.innerText || gong.textContent || '';
+
+            // 精準匹配（八門優先 → 九星 → 八神）
+            let tooltipText = '';
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;   // 找到第一個就停止（優先順序）
+                }
             }
 
-            // 四害標籤（暫時用 class 判斷，之後可再精準）
-            if (text.includes('死門') || text.includes('傷門')) {
-                gong.style.border = '3px solid #c00';
+            if (tooltipText) {
+                // 改用自訂 tooltip（比 title 更快、更美觀）
+                gong.setAttribute('data-tooltip', tooltipText);
+                gong.style.cursor = 'help';
+                gong.style.position = 'relative';
             }
         });
     }
 
     // 頁面載入後執行
     window.onload = function() {
-        initGongs();      // 之前轉盤的初始化
-        addHoverAndTags(); // 新增 Hover + 標籤
+        initGongs();      // 轉盤功能初始化
+        addHoverEffect(); // Hover 象義初始化
     };
 </script>
-<!-- ====================== Next Step 結束 ====================== -->
+
+<!-- ====================== Hover 美化 CSS ====================== -->
+<style>
+    .pan-grid .gong[data-tooltip]:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a1a;
+        color: #ffd700;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        white-space: nowrap;
+        z-index: 999;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        pointer-events: none;
+        opacity: 1;
+        transition: all 0.1s ease;
+    }
+</style>
+<!-- ====================== Hover 優化版結束 ====================== -->
                                 
 </body>
 
