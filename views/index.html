@@ -511,11 +511,11 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 最終極簡穩定版（native title + 簡化轉盤） ====================== -->
+<!-- ====================== 最終加強版：4害標籤 + Hover + 轉盤 ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
 
     const xiangYiData = {
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
@@ -546,12 +546,24 @@
         "九天": "主天空、打鬥、行軍打仗、上升、遠走高飛（吉）"
     };
 
-    function setTitleOnGongs() {
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach(gong => {
+    let tooltip;
+
+    function createTooltip() {
+        tooltip = document.createElement('div');
+        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none; white-space:pre-wrap;`;
+        document.body.appendChild(tooltip);
+    }
+
+    function addFastHover() {
+        const grid = document.querySelector('.pan-grid');
+        if (!grid) return;
+
+        grid.addEventListener('mousemove', function(e) {
+            const gong = e.target.closest('.gong');
+            if (!gong) return;
+
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
-
             for (let key in xiangYiData) {
                 if (text.includes(key)) {
                     tooltipText = xiangYiData[key];
@@ -559,12 +571,43 @@
                 }
             }
             if (tooltipText) {
-                gong.setAttribute('title', tooltipText);
+                tooltip.textContent = tooltipText;
+                tooltip.style.left = (e.clientX + 18) + 'px';
+                tooltip.style.top = (e.clientY + 18) + 'px';
+                tooltip.style.display = 'block';
+            }
+        });
+
+        grid.addEventListener('mouseleave', function() {
+            tooltip.style.display = 'none';
+        });
+    }
+
+    // 4害標籤（加強版）
+    function addFourHarmTags() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach(gong => {
+            const text = (gong.innerText || gong.textContent || '').trim();
+
+            // 清空舊標籤
+            gong.querySelectorAll('.harm-tag').forEach(tag => tag.remove());
+
+            let html = '';
+
+            if (text.includes('門迫') || text.includes('迫')) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">門迫</span>`;
+            if (text.includes('擊刑') || text.includes('刑')) html += `<span class="harm-tag" style="background:#f80;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">擊刑</span>`;
+            if (text.includes('入墓') || text.includes('墓')) html += `<span class="harm-tag" style="background:#a00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">入墓</span>`;
+            if (text.includes('空亡') || text.includes('空')) html += `<span class="harm-tag" style="background:#aa0;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">空亡</span>`;
+            if (text.includes('驛馬') || text.includes('馬')) html += `<span class="harm-tag" style="background:#08c;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">驛馬</span>`;
+
+            if (html) {
+                const container = gong.querySelector('.panel-body') || gong;
+                container.insertAdjacentHTML('beforeend', html);
             }
         });
     }
 
-    // 簡化轉盤功能（使用 innerHTML，但每次轉動後立即重新設定 title）
+    // 轉盤功能
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
@@ -595,7 +638,8 @@
             gong.innerHTML = temp[index];
         });
 
-        setTitleOnGongs();   // 轉盤後立即重新設定 title
+        setTitleOnGongs();
+        addFourHarmTags();
 
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
@@ -607,16 +651,33 @@
             gong.innerHTML = originalGongs[index];
         });
         setTitleOnGongs();
+        addFourHarmTags();
         alert('✅ 轉盤已完全重置');
     }
 
-    // 頁面載入後執行
+    function setTitleOnGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach(gong => {
+            const text = (gong.innerText || gong.textContent || '').trim();
+            let tooltipText = '';
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;
+                }
+            }
+            if (tooltipText) gong.setAttribute('title', tooltipText);
+        });
+    }
+
+    // 一次性執行
     window.addEventListener('load', () => {
         initGongs();
-        setTitleOnGongs();   // 初始設定 title
+        setTitleOnGongs();
+        addFourHarmTags();
     });
 </script>
-<!-- ====================== 最終穩定版結束 ====================== -->
+<!-- ====================== 最終版結束 ====================== -->
                                 
 </body>
 
