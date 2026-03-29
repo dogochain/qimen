@@ -511,9 +511,8 @@
     <script src="js/app.js"></script>
 
 
-              <!-- ====================== 最終穩定版：轉盤 + 即時 Hover（9宮必顯示） ====================== -->
+            <!-- ====================== 全新穩定版：CSS Grid order 轉盤 + 即時 Hover ====================== -->
 <script>
-    let originalGongs = [];
     let rotateCount = 0;
     const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
 
@@ -554,7 +553,6 @@
         document.body.appendChild(tooltip);
     }
 
-    // 強健版 Hover（使用 delegation + 每次轉盤後重新綁定）
     function addFastHover() {
         const grid = document.querySelector('.pan-grid');
         if (!grid) return;
@@ -565,14 +563,12 @@
 
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
-
             for (let key in xiangYiData) {
                 if (text.includes(key)) {
                     tooltipText = xiangYiData[key];
                     break;
                 }
             }
-
             if (tooltipText) {
                 tooltip.textContent = tooltipText;
                 tooltip.style.left = (e.clientX + 18) + 'px';
@@ -586,39 +582,19 @@
         });
     }
 
-    // 轉盤功能
-    function initGongs() {
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
-    }
-
+    // 新設計：使用 CSS order 屬性轉動外圍8宮（不觸碰 innerHTML）
     function rotateSequence() {
-        if (originalGongs.length === 0) initGongs();
         rotateCount = (rotateCount + 1) % 8;
 
         const gongs = document.querySelectorAll('.pan-grid .gong');
-        const temp = [...originalGongs];
 
-        let outerValues = outerOrder.map(num => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            return originalGongs[index];
-        });
-
-        for (let i = 0; i < rotateCount; i++) {
-            outerValues.unshift(outerValues.pop());
-        }
-
+        // 給外圍8宮設定 order
         outerOrder.forEach((num, i) => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            if (index !== -1) temp[index] = outerValues[i];
+            const gong = Array.from(gongs).find(g => g.classList.contains('gong' + num));
+            if (gong) {
+                gong.style.order = (i + rotateCount) % 8;
+            }
         });
-
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = temp[index];
-        });
-
-        // 關鍵：每次轉盤後重新綁定 Hover
-        addFastHover();
 
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
@@ -626,16 +602,15 @@
     function resetRotate() {
         rotateCount = 0;
         const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = originalGongs[index];
+        outerOrder.forEach((num, i) => {
+            const gong = Array.from(gongs).find(g => g.classList.contains('gong' + num));
+            if (gong) gong.style.order = i;
         });
-        addFastHover();   // 重置後也重新綁定
         alert('✅ 轉盤已完全重置');
     }
 
     // 一次性執行
     window.addEventListener('load', () => {
-        initGongs();
         createTooltip();
         addFastHover();
     });
