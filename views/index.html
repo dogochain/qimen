@@ -511,15 +511,23 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 最終精準版 Hover（正確匹配八門、九星、八神） ====================== -->
+<!-- ====================== 最終精準版 Hover（每個單詞精準顯示） ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
     const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
 
-    // 精準版象義資料（八門最優先）
+    // 優先順序陣列（長詞優先 + 八門最優先）
+    const priorityKeys = [
+        // 八門
+        "休門", "生門", "開門", "傷門", "杜門", "景門", "死門", "驚門",
+        // 九星
+        "天蓬", "天任", "天沖", "天輔", "天英", "天芮", "天柱", "天心",
+        // 八神
+        "值符", "騰蛇", "太陰", "六合", "白虎", "玄武", "九地", "九天"
+    ];
+
     const xiangYiData = {
-        // 八門（優先匹配）
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
         "生門": "主錢財、收入、房產、住宅、土地（吉）",
         "開門": "主工作、公司、經營、貿易（吉）",
@@ -529,7 +537,6 @@
         "死門": "主不開心、死亡、不動、結束、穩固、執著（凶）",
         "驚門": "主驚慌、擔心、吃驚、官非、口舌是非（凶）",
 
-        // 九星
         "天蓬": "主膽大、妄為、大賊、聰明、智慧、好色、大貪（凶）",
         "天任": "主擔當、任勞任怨、忠厚、保守、謙虛（吉）",
         "天沖": "主沖動、易怒、沖擊、快速、猛烈、矛盾、鬥爭（凶）",
@@ -539,7 +546,6 @@
         "天柱": "主破壞、刑傷、好鬥、力挽狂瀾（凶）",
         "天心": "主核心、管理能力、領袖、政治、醫病（吉）",
 
-        // 八神
         "值符": "主官員、名貴高級、權力、得神庇佑、德高望重（吉）",
         "騰蛇": "主變化、反覆、纏繞、夢、虛假、驚恐（凶）",
         "太陰": "主護佑、陰德、喜慶、策劃、隱藏、陰謀詭計（吉）",
@@ -550,47 +556,32 @@
         "九天": "主天空、打鬥、行軍打仗、上升、遠走高飛（吉）"
     };
 
-    let tooltip;
-
-    function createTooltip() {
-        tooltip = document.createElement('div');
-        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none; white-space:pre-wrap;`;
-        document.body.appendChild(tooltip);
-    }
-
-    function addFastHover() {
-        const grid = document.querySelector('.pan-grid');
-        if (!grid) return;
-
-        grid.addEventListener('mousemove', function(e) {
-            const gong = e.target.closest('.gong');
-            if (!gong) return;
-
+    function setPreciseTitle() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach(gong => {
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
 
-            // 精準匹配（八門優先 + 較長關鍵詞優先）
-            for (let key in xiangYiData) {
-                if (text.includes(key)) {
-                    tooltipText = xiangYiData[key];
-                    break;
+            // 逐行檢查 + 優先順序匹配
+            const lines = text.split('\n');
+            for (let line of lines) {
+                line = line.trim();
+                for (let key of priorityKeys) {
+                    if (line.includes(key)) {
+                        tooltipText = xiangYiData[key];
+                        break;
+                    }
                 }
+                if (tooltipText) break;
             }
 
             if (tooltipText) {
-                tooltip.textContent = tooltipText;
-                tooltip.style.left = (e.clientX + 18) + 'px';
-                tooltip.style.top = (e.clientY + 18) + 'px';
-                tooltip.style.display = 'block';
+                gong.setAttribute('title', tooltipText);
             }
-        });
-
-        grid.addEventListener('mouseleave', function() {
-            tooltip.style.display = 'none';
         });
     }
 
-    // 轉盤功能（保持不變）
+    // 轉盤功能
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
@@ -621,6 +612,8 @@
             gong.innerHTML = temp[index];
         });
 
+        setPreciseTitle();   // 轉盤後立即重新設定 title
+
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
 
@@ -630,14 +623,14 @@
         gongs.forEach((gong, index) => {
             gong.innerHTML = originalGongs[index];
         });
+        setPreciseTitle();
         alert('✅ 轉盤已完全重置');
     }
 
-    // 一次性執行
+    // 頁面載入後執行
     window.addEventListener('load', () => {
         initGongs();
-        createTooltip();
-        addFastHover();
+        setPreciseTitle();
     });
 </script>
 <!-- ====================== 最終精準版結束 ====================== -->
