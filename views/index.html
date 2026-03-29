@@ -511,11 +511,11 @@
     <script src="js/app.js"></script>
 
 
-                          <!-- ====================== 最終穩定版：轉盤 + 即時 Hover（所有宮位正常） ====================== -->
+                     <!-- ====================== 最終加強版：所有宮位（包括9宮）必顯示 Hover ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 外圍順時針順序
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
 
     const xiangYiData = {
         "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
@@ -554,7 +554,7 @@
         document.body.appendChild(tooltip);
     }
 
-    // 使用 event delegation（解決轉盤內HTML被替換後 listener 消失的問題）
+    // 超強健版 Hover（使用 event delegation + 更寬鬆匹配）
     function addFastHover() {
         const grid = document.querySelector('.pan-grid');
         if (!grid) return;
@@ -566,11 +566,17 @@
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
 
-            for (let key in xiangYiData) {
-                if (text.includes(key)) {
-                    tooltipText = xiangYiData[key];
-                    break;
+            // 更強匹配：逐行 + 關鍵字
+            const lines = text.split(/\n|\s+/);
+            for (let line of lines) {
+                line = line.trim();
+                for (let key in xiangYiData) {
+                    if (line.includes(key)) {
+                        tooltipText = xiangYiData[key];
+                        break;
+                    }
                 }
+                if (tooltipText) break;
             }
 
             if (tooltipText) {
@@ -595,7 +601,6 @@
     function rotateSequence() {
         if (originalGongs.length === 0) initGongs();
         rotateCount = (rotateCount + 1) % 8;
-
         const gongs = document.querySelectorAll('.pan-grid .gong');
         const temp = [...originalGongs];
 
@@ -629,14 +634,14 @@
         alert('✅ 轉盤已完全重置');
     }
 
-    // 一次性執行所有功能
+    // 一次性執行
     window.addEventListener('load', () => {
         initGongs();
         createTooltip();
         addFastHover();
     });
 </script>
-<!-- ====================== 最終版結束 ====================== -->
+<!-- ====================== 最終加強版結束 ====================== -->
                                 
 </body>
 
