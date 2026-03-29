@@ -87,10 +87,10 @@
             </div>
         </div>
                             
-<!-- ====================== 兩個按鈕（外圍順時針） ====================== -->
+<!-- ====================== 兩個按鈕 + 美化 ====================== -->
 <div class="row">
     <div class="col-md-12 text-center">
-        <h3 style="margin:25px 0 15px 0; color:#b8860b;">🔄 傳統轉盤操作（中宮固定）</h3>
+        <h3 style="margin:25px 0 15px 0; color:#b8860b; font-weight:bold;">🔄 傳統轉盤操作（中宮固定）</h3>
         <button onclick="rotateSequence()" class="btn btn-warning" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">順序轉盤</button>
         <button onclick="resetRotate()" class="btn btn-danger" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">重置轉盤</button>
     </div>
@@ -511,63 +511,73 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 最終版：外圍8宮順時針轉動 + 中宮固定 ====================== -->
+<!-- ====================== Next Step：Hover 象義 + 四害標籤 + 美化 ====================== -->
 <script>
-    let originalGongs = [];
-    let rotateCount = 0;
+    // Hover 象義資料（來自你提供的 PDF）
+    const xiangYiData = {
+        // 八門
+        "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
+        "生門": "主錢財、收入、房產、住宅、土地（吉）",
+        "開門": "主工作、公司、經營、貿易（吉）",
+        "傷門": "主車、受傷、打鬥、賭博、爭鬥、警察、黑社會（凶）",
+        "杜門": "主阻隔、隱藏、困難、阻止、情緒問題（凶）",
+        "景門": "主漂亮、華麗、風景、計劃、文化、血光、名氣（半吉凶）",
+        "死門": "主不開心、死亡、不動、結束、穩固、執著（凶）",
+        "驚門": "主驚慌、擔心、吃驚、官非、口舌是非（凶）",
 
-    // 外圍8宮的順時針順序（從右上角2宮開始）
-    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 2→7→6→1→8→3→4→9
+        // 九星（簡化版，可再擴充）
+        "天蓬": "主膽大、妄為、大賊、聰明、好色、大貪（凶）",
+        "天任": "主擔當、任勞任怨、忠厚、保守（吉）",
+        "天沖": "主沖動、易怒、快速、猛烈、矛盾（凶）",
+        "天輔": "主輔佐、指導、保護、靠山、仁慈幫助（吉）",
+        "天英": "主英俊、漂亮、英雄主義、智勇雙全（吉）",
+        "天芮": "主疾病、問題、學習、桃花、修道（凶）",
+        "天柱": "主破壞、刑傷、好鬥、力挽狂瀾（凶）",
+        "天心": "主核心、管理能力、領袖、政治、醫病（吉）",
 
-    function initGongs() {
+        // 八神
+        "值符": "主官員、名貴高級、權力、得神庇佑（吉）",
+        "騰蛇": "主變化、反覆、纏繞、虛假、驚恐（凶）",
+        "太陰": "主護佑、陰德、喜慶、策劃、隱藏（吉）",
+        "六合": "主感情、婚姻、歡樂、合作、眾多（吉）",
+        "白虎": "主辛苦、受傷、爭鬥、官司、霸氣（凶）",
+        "玄武": "主虛假、頭暈、糊塗、風流、小賊（凶）",
+        "九地": "主長久、地下、穩定、不動、慢（吉）",
+        "九天": "主天空、打鬥、上升、遠走高飛（吉）"
+    };
+
+    function addHoverAndTags() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
-        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
+        
+        gongs.forEach(gong => {
+            // 找出宮內文字
+            const text = gong.innerText || gong.textContent;
+            
+            // 簡單匹配象義
+            let tooltip = '';
+            Object.keys(xiangYiData).forEach(key => {
+                if (text.includes(key)) tooltip = xiangYiData[key];
+            });
+
+            if (tooltip) {
+                gong.setAttribute('title', tooltip);   // Hover 顯示
+                gong.style.cursor = 'help';
+            }
+
+            // 四害標籤（暫時用 class 判斷，之後可再精準）
+            if (text.includes('死門') || text.includes('傷門')) {
+                gong.style.border = '3px solid #c00';
+            }
+        });
     }
 
-    function rotateSequence() {
-        if (originalGongs.length === 0) initGongs();
-        rotateCount = (rotateCount + 1) % 8;
-
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        const temp = [...originalGongs];
-
-        // 只處理外圍8宮
-        let outerValues = outerOrder.map(num => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            return originalGongs[index];
-        });
-
-        // 順時針旋轉外圍
-        for (let i = 0; i < rotateCount; i++) {
-            outerValues.unshift(outerValues.pop());
-        }
-
-        // 放回外圍宮位
-        outerOrder.forEach((num, i) => {
-            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
-            if (index !== -1) temp[index] = outerValues[i];
-        });
-
-        // 寫回九宮格
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = temp[index];
-        });
-
-        alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
-    }
-
-    function resetRotate() {
-        rotateCount = 0;
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach((gong, index) => {
-            gong.innerHTML = originalGongs[index];
-        });
-        alert('✅ 轉盤已完全重置');
-    }
-
-    window.onload = initGongs;
+    // 頁面載入後執行
+    window.onload = function() {
+        initGongs();      // 之前轉盤的初始化
+        addHoverAndTags(); // 新增 Hover + 標籤
+    };
 </script>
-<!-- ====================== 最終版結束 ====================== -->
+<!-- ====================== Next Step 結束 ====================== -->
                                 
 </body>
 
