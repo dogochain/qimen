@@ -534,6 +534,56 @@ function applyRotation() {
 }
 </script>
 <!-- ====================== JavaScript 結束 ====================== -->
+
+
+<!-- ====================== 轉盤視覺效果 ====================== -->
+<script>
+    // 儲存九宮格原始內容
+    let originalGongs = [];
+    let rotateState = { tian: 0, men: 0, xing: 0 };
+
+    function initGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
+    }
+
+    // 順宮序轉動（順時針）
+    function rotateLayer(layer) {
+        if (originalGongs.length === 0) initGongs();
+
+        rotateState[layer] = (rotateState[layer] + 1) % 9;
+
+        // 順宮序旋轉九宮格內容（4→9→2→7→6→1→8→3→5）
+        const order = [4,9,2,7,6,1,8,3,5];   // 固定宮位順序
+        const newOrder = [...order];
+        for (let i = 0; i < rotateState[layer]; i++) {
+            newOrder.unshift(newOrder.pop());   // 順時針旋轉
+        }
+
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach((gong, index) => {
+            const targetIndex = order.indexOf(parseInt(gong.classList[1].replace('gong', '')));
+            if (targetIndex !== -1) {
+                gong.innerHTML = originalGongs[newOrder[targetIndex] - 1];   // 1-based index
+            }
+        });
+
+        alert(`✅ 已順宮轉動 ${layer === 'tian' ? '天盤' : layer === 'men' ? '八門' : '九星'} 1 宮！`);
+    }
+
+    function resetRotate() {
+        rotateState = { tian: 0, men: 0, xing: 0 };
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = originalGongs[index];
+        });
+        alert('✅ 轉盤已完全重置');
+    }
+
+    // 頁面載入後初始化
+    window.onload = initGongs;
+</script>
+<!-- ====================== 第二步結束 ====================== -->
                                 
 </body>
 
