@@ -86,18 +86,16 @@
                 </div>
             </div>
         </div>
-
-                            <!-- ====================== 新增：互動轉盤按鈕 ====================== -->
+                            
+   <!-- ====================== 簡化版：兩個按鈕 ====================== -->
 <div class="row">
     <div class="col-md-12 text-center">
-        <h3 style="margin:20px 0 15px 0; color:#b8860b;">🔄 傳統轉盤操作（順宮序轉動）</h3>
-        <button onclick="rotateLayer('tian')" class="btn btn-warning" style="margin:5px; padding:12px 28px; font-size:16px;">順宮轉天盤</button>
-        <button onclick="rotateLayer('men')" class="btn btn-warning" style="margin:5px; padding:12px 28px; font-size:16px;">順宮轉八門</button>
-        <button onclick="rotateLayer('xing')" class="btn btn-warning" style="margin:5px; padding:12px 28px; font-size:16px;">順宮轉九星</button>
-        <button onclick="resetRotate()" class="btn btn-danger" style="margin:5px; padding:12px 28px; font-size:16px;">重置轉盤</button>
+        <h3 style="margin:20px 0 15px 0; color:#b8860b;">🔄 傳統轉盤操作（中宮固定）</h3>
+        <button onclick="rotateSequence()" class="btn btn-warning" style="margin:8px; padding:14px 32px; font-size:17px;">順序轉盤</button>
+        <button onclick="resetRotate()" class="btn btn-danger" style="margin:8px; padding:14px 32px; font-size:17px;">重置轉盤</button>
     </div>
 </div>
-<!-- ====================== 轉盤按鈕結束 ====================== -->
+<!-- ====================== 按鈕結束 ====================== -->
                             
         <div class="row">
             <div class="col-md-12">
@@ -513,71 +511,60 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== A 版本：真正獨立三層轉盤 ====================== -->
+<!-- ====================== 簡化版：兩個按鈕 + 中宮永遠不變 ====================== -->
 <script>
     let originalGongs = [];
-    let tianRotate = 0;
-    let menRotate = 0;
-    let xingRotate = 0;
+    let rotateCount = 0;   // 只記錄整體轉動次數
 
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
     }
 
-    // 天盤獨立轉動
-    function rotateTian() {
+    // 順序轉盤（中宮不動）
+    function rotateSequence() {
         if (originalGongs.length === 0) initGongs();
-        tianRotate = (tianRotate + 1) % 9;
-        applyIndependentRotation();
-        alert(`✅ 已順宮轉動 天盤 1 宮！`);
-    }
+        rotateCount = (rotateCount + 1) % 8;   // 只轉8宮，中宮不參與
 
-    // 八門獨立轉動
-    function rotateMen() {
-        if (originalGongs.length === 0) initGongs();
-        menRotate = (menRotate + 1) % 9;
-        applyIndependentRotation();
-        alert(`✅ 已順宮轉動 八門 1 宮！`);
-    }
-
-    // 九星獨立轉動
-    function rotateXing() {
-        if (originalGongs.length === 0) initGongs();
-        xingRotate = (xingRotate + 1) % 9;
-        applyIndependentRotation();
-        alert(`✅ 已順宮轉動 九星 1 宮！`);
-    }
-
-    function applyIndependentRotation() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
-        const totalRotate = (tianRotate + menRotate + xingRotate) % 9;   // 合併三層效果
-
         const temp = [...originalGongs];
-        for (let i = 0; i < totalRotate; i++) {
-            temp.unshift(temp.pop());   // 順時針旋轉
+
+        // 只旋轉外圍8宮（跳過第5個 = 中宮）
+        const outerIndices = [0,1,2,3,5,6,7,8];
+        const centerIndex = 4;
+
+        const outerTemp = outerIndices.map(i => temp[i]);
+        for (let i = 0; i < rotateCount; i++) {
+            outerTemp.unshift(outerTemp.pop());   // 順時針旋轉
         }
 
+        // 放回外圍宮位
+        outerIndices.forEach((idx, i) => {
+            temp[idx] = outerTemp[i];
+        });
+
+        // 中宮保持不變
         gongs.forEach((gong, index) => {
             gong.innerHTML = temp[index];
         });
+
+        alert(`✅ 已順宮序轉盤 1 次（中宮固定不動）`);
     }
 
+    // 重置轉盤
     function resetRotate() {
-        tianRotate = 0;
-        menRotate = 0;
-        xingRotate = 0;
+        rotateCount = 0;
         const gongs = document.querySelectorAll('.pan-grid .gong');
         gongs.forEach((gong, index) => {
             gong.innerHTML = originalGongs[index];
         });
-        alert('✅ 轉盤已完全重置（三層全部歸零）');
+        alert('✅ 轉盤已完全重置');
     }
 
     // 頁面載入後初始化
     window.onload = initGongs;
 </script>
-<!-- ====================== A 版本結束 ====================== -->
+<!-- ====================== 簡化版結束 ====================== -->
                                 
 </body>
 
