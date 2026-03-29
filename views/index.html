@@ -87,10 +87,10 @@
             </div>
         </div>
                             
-<!-- ====================== 簡化版兩個按鈕 ====================== -->
+<!-- ====================== 兩個按鈕（外圍順時針） ====================== -->
 <div class="row">
     <div class="col-md-12 text-center">
-        <h3 style="margin:25px 0 15px 0; color:#b8860b;">🔄 傳統轉盤操作（中宮固定不動）</h3>
+        <h3 style="margin:25px 0 15px 0; color:#b8860b;">🔄 傳統轉盤操作（中宮固定）</h3>
         <button onclick="rotateSequence()" class="btn btn-warning" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">順序轉盤</button>
         <button onclick="resetRotate()" class="btn btn-danger" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">重置轉盤</button>
     </div>
@@ -511,17 +511,19 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 簡化版：兩個按鈕 + 外圍8宮順時針轉動 + 中宮固定 ====================== -->
+<!-- ====================== 最終版：外圍8宮順時針轉動 + 中宮固定 ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
+
+    // 外圍8宮的順時針順序（從右上角2宮開始）
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 2→7→6→1→8→3→4→9
 
     function initGongs() {
         const gongs = document.querySelectorAll('.pan-grid .gong');
         originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
     }
 
-    // 順序轉盤（只轉外圍8宮，中宮永遠不動）
     function rotateSequence() {
         if (originalGongs.length === 0) initGongs();
         rotateCount = (rotateCount + 1) % 8;
@@ -529,21 +531,24 @@
         const gongs = document.querySelectorAll('.pan-grid .gong');
         const temp = [...originalGongs];
 
-        // 外圍8宮的索引（跳過中宮 index 4）
-        const outerIndices = [0,1,2,3,5,6,7,8];
-        let outerTemp = outerIndices.map(i => temp[i]);
+        // 只處理外圍8宮
+        let outerValues = outerOrder.map(num => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            return originalGongs[index];
+        });
 
-        // 順時針旋轉外圍8宮
+        // 順時針旋轉外圍
         for (let i = 0; i < rotateCount; i++) {
-            outerTemp.unshift(outerTemp.pop());
+            outerValues.unshift(outerValues.pop());
         }
 
         // 放回外圍宮位
-        outerIndices.forEach((idx, i) => {
-            temp[idx] = outerTemp[i];
+        outerOrder.forEach((num, i) => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            if (index !== -1) temp[index] = outerValues[i];
         });
 
-        // 中宮永遠不變
+        // 寫回九宮格
         gongs.forEach((gong, index) => {
             gong.innerHTML = temp[index];
         });
@@ -551,7 +556,6 @@
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
 
-    // 重置
     function resetRotate() {
         rotateCount = 0;
         const gongs = document.querySelectorAll('.pan-grid .gong');
@@ -561,10 +565,9 @@
         alert('✅ 轉盤已完全重置');
     }
 
-    // 頁面載入後初始化
     window.onload = initGongs;
 </script>
-<!-- ====================== 簡化版結束 ====================== -->
+<!-- ====================== 最終版結束 ====================== -->
                                 
 </body>
 
