@@ -511,7 +511,7 @@
     <script src="js/app.js"></script>
 
 
-                                <!-- ====================== 最終優化版：轉盤 + 即時 Hover（所有宮位正常） ====================== -->
+                          <!-- ====================== 最終穩定版：轉盤 + 即時 Hover（所有宮位正常） ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
@@ -554,37 +554,35 @@
         document.body.appendChild(tooltip);
     }
 
+    // 使用 event delegation（解決轉盤內HTML被替換後 listener 消失的問題）
     function addFastHover() {
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach(gong => {
+        const grid = document.querySelector('.pan-grid');
+        if (!grid) return;
+
+        grid.addEventListener('mousemove', function(e) {
+            const gong = e.target.closest('.gong');
+            if (!gong) return;
+
             const text = (gong.innerText || gong.textContent || '').trim();
             let tooltipText = '';
 
-            // 更強健匹配（逐行檢查 + 優先八門）
-            const lines = text.split('\n');
-            for (let line of lines) {
-                line = line.trim();
-                for (let key in xiangYiData) {
-                    if (line.includes(key)) {
-                        tooltipText = xiangYiData[key];
-                        break;
-                    }
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;
                 }
-                if (tooltipText) break;
             }
 
             if (tooltipText) {
-                gong.style.cursor = 'help';
-                gong.addEventListener('mousemove', (e) => {
-                    tooltip.textContent = tooltipText;
-                    tooltip.style.left = (e.clientX + 18) + 'px';
-                    tooltip.style.top = (e.clientY + 18) + 'px';
-                    tooltip.style.display = 'block';
-                });
-                gong.addEventListener('mouseleave', () => {
-                    tooltip.style.display = 'none';
-                });
+                tooltip.textContent = tooltipText;
+                tooltip.style.left = (e.clientX + 18) + 'px';
+                tooltip.style.top = (e.clientY + 18) + 'px';
+                tooltip.style.display = 'block';
             }
+        });
+
+        grid.addEventListener('mouseleave', function() {
+            tooltip.style.display = 'none';
         });
     }
 
@@ -597,22 +595,28 @@
     function rotateSequence() {
         if (originalGongs.length === 0) initGongs();
         rotateCount = (rotateCount + 1) % 8;
+
         const gongs = document.querySelectorAll('.pan-grid .gong');
         const temp = [...originalGongs];
+
         let outerValues = outerOrder.map(num => {
             const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
             return originalGongs[index];
         });
+
         for (let i = 0; i < rotateCount; i++) {
             outerValues.unshift(outerValues.pop());
         }
+
         outerOrder.forEach((num, i) => {
             const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
             if (index !== -1) temp[index] = outerValues[i];
         });
+
         gongs.forEach((gong, index) => {
             gong.innerHTML = temp[index];
         });
+
         alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
     }
 
