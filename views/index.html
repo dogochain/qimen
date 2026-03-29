@@ -510,7 +510,64 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/app.js"></script>
 
+<!-- ====================== 最終版：外圍8宮順時針轉動 + 中宮固定 ====================== -->
+<script>
+    let originalGongs = [];
+    let rotateCount = 0;
 
+    // 外圍8宮的順時針順序（從右上角2宮開始）
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];   // 2→7→6→1→8→3→4→9
+
+    function initGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
+    }
+
+    function rotateSequence() {
+        if (originalGongs.length === 0) initGongs();
+        rotateCount = (rotateCount + 1) % 8;
+
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        const temp = [...originalGongs];
+
+        // 只處理外圍8宮
+        let outerValues = outerOrder.map(num => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            return originalGongs[index];
+        });
+
+        // 順時針旋轉外圍
+        for (let i = 0; i < rotateCount; i++) {
+            outerValues.unshift(outerValues.pop());
+        }
+
+        // 放回外圍宮位
+        outerOrder.forEach((num, i) => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            if (index !== -1) temp[index] = outerValues[i];
+        });
+
+        // 寫回九宮格
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = temp[index];
+        });
+
+        alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
+    }
+
+    function resetRotate() {
+        rotateCount = 0;
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = originalGongs[index];
+        });
+        alert('✅ 轉盤已完全重置');
+    }
+
+    window.onload = initGongs;
+</script>
+<!-- ====================== 最終版結束 ====================== -->
+                                
 <!-- ====================== Next Step：Hover 象義 + 四害標籤 + 美化 ====================== -->
 <script>
     // Hover 象義資料（來自你提供的 PDF）
