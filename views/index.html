@@ -511,7 +511,7 @@
     <script src="js/app.js"></script>
 
 
-<!-- ====================== 最終加強版：4害標籤 + Hover + 轉盤 ====================== -->
+<!-- ====================== 最終加強版： Hover + 轉盤 ====================== -->
 <script>
     let originalGongs = [];
     let rotateCount = 0;
@@ -583,29 +583,7 @@
         });
     }
 
-    // 4害標籤（加強版）
-    function addFourHarmTags() {
-        const gongs = document.querySelectorAll('.pan-grid .gong');
-        gongs.forEach(gong => {
-            const text = (gong.innerText || gong.textContent || '').trim();
-
-            // 清空舊標籤
-            gong.querySelectorAll('.harm-tag').forEach(tag => tag.remove());
-
-            let html = '';
-
-            if (text.includes('門迫') || text.includes('迫')) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">門迫</span>`;
-            if (text.includes('擊刑') || text.includes('刑')) html += `<span class="harm-tag" style="background:#f80;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">擊刑</span>`;
-            if (text.includes('入墓') || text.includes('墓')) html += `<span class="harm-tag" style="background:#a00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">入墓</span>`;
-            if (text.includes('空亡') || text.includes('空')) html += `<span class="harm-tag" style="background:#aa0;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">空亡</span>`;
-            if (text.includes('驛馬') || text.includes('馬')) html += `<span class="harm-tag" style="background:#08c;color:white;font-size:11px;padding:2px 6px;border-radius:3px;margin-left:4px;">驛馬</span>`;
-
-            if (html) {
-                const container = gong.querySelector('.panel-body') || gong;
-                container.insertAdjacentHTML('beforeend', html);
-            }
-        });
-    }
+    
 
     // 轉盤功能
     function initGongs() {
