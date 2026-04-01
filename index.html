@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>奇门遁甲排盘系统</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style-new.css">
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.3/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                <span class="sr-only">切换导航</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">奇门遁甲排盘系统</a>
+        </div>
+
+        <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active">
+                    <a href="/">实时排盘</a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#customPanModal">自定义排盘</a>
+                </li>
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#helpModal">使用说明</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2 class="page-title">奇门遁甲排盘</h2>
+                <div class="basic-info">
+                    <div class="info-item">
+                        <strong>排盘类型:</strong> <span id="panType"><%= '拆補' %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>排盘方法:</strong> <span id="panMethod"><%= qimen.basicInfo && qimen.basicInfo.method || '' %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>公历:</strong> <span id="solarDate"><%= qimen.basicInfo && qimen.basicInfo.date || '' %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>农历:</strong> <span id="lunarDate"><%= qimen.basicInfo && qimen.basicInfo.lunarDate || '' %></span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <strong>四柱:</strong>
+                        <span class="label label-primary"><%= qimen.siZhu && qimen.siZhu.year || '' %></span>
+                        <span class="label label-primary"><%= qimen.siZhu && qimen.siZhu.month || '' %></span>
+                        <span class="label label-primary"><%= qimen.siZhu && qimen.siZhu.day || '' %></span>
+                        <span class="label label-primary"><%= qimen.siZhu && qimen.siZhu.time || '' %></span>
+                    </div>
+                    --> 
+                    <div class="info-item">
+                        <strong>旬首:</strong> <span id="xunShou"><%= qimen.xunShou || '' %></span>
+                    </div>
+                    <!--
+                    <div class="info-item">
+                        <strong>局数:</strong> <span id="sr"><%= qimen.juShu && qimen.juShu.fullName || '' %></span>
+                    </div>
+                    <div class="info-item">
+                        <strong>值符:</strong> <span id="zhiFu"><%= qimen.zhiFuXing || '' %>(<%= qimen.zhiFuGong || '' %>宫)</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>值使:</strong> <span id="zhiShi"><%= qimen.zhiShiMen || '' %>(<%= qimen.zhiShiGong || '' %>宫)</span>
+                    </div>
+                    -->
+                    <!--
+                     <div class="info-item">
+                        <strong>运势:</strong> <span id="overallLuck" class="<%= qimen.analysis && qimen.analysis.overallJiXiong || 'ping' %>"><%= qimen.analysis && qimen.analysis.overallJiXiongText || '平' %></span>
+                    </div> 
+                    -->
+                </div>
+            </div>
+        </div>
+                            
+<!-- ====================== 兩個按鈕 + 美化 ====================== -->
+<div class="row">
+    <div class="col-md-12 text-center">
+        <h3 style="margin:25px 0 15px 0; color:#b8860b; font-weight:bold;">🔄 轉盤按鈕（中宮固定）</h3>
+        <button onclick="rotateSequence()" class="btn btn-warning" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">順序轉盤</button>
+        <button onclick="resetRotate()" class="btn btn-danger" style="margin:8px; padding:14px 40px; font-size:17px; font-weight:bold;">重置轉盤</button>
+    </div>
+</div>
+<!-- ====================== 按鈕結束 ====================== -->
+                            
+        <div class="row">
+            <div class="col-md-12">
+                <!-- 奇门九宫图 -->
+                <div class="qimen-pan">
+                    <div class="pan-outer">
+                        <div class="pan-grid">
+                            <!-- A. 第一行 - 4,9,2 -->
+                            <div class="gong gong4 <%= qimen.jiuGongAnalysis[4] && qimen.jiuGongAnalysis[4].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '4' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '4' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['4'] : '',
+                                    directionWuxing: JIU_GONG['4'].direction + ' ' + JIU_GONG['4'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['4'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['4'] : '',
+                                    gongName: JIU_GONG['4'].name,
+                                    gongNumber: '四',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['4'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['4'] : '乙',
+                                    diZhi: qimen.anGan ? qimen.anGan['4'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('4'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '4',
+                                    isZhiShi: qimen.zhiShiGong === '4',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '4',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <div class="gong gong9 <%= qimen.jiuGongAnalysis[9] && qimen.jiuGongAnalysis[9].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '9' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '9' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['9'] : '',
+                                    directionWuxing: JIU_GONG['9'].direction + ' ' + JIU_GONG['9'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['9'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['9'] : '',
+                                    gongName: JIU_GONG['9'].name,
+                                    gongNumber: '九',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['9'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['9'] : '壬',
+                                    diZhi: qimen.anGan ? qimen.anGan['9'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('9'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '9',
+                                    isZhiShi: qimen.zhiShiGong === '9',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '9',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <div class="gong gong2 <%= qimen.jiuGongAnalysis[2] && qimen.jiuGongAnalysis[2].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '2' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '2' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['2'] : '',
+                                    directionWuxing: JIU_GONG['2'].direction + ' ' + JIU_GONG['2'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['2'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['2'] : '',
+                                    gongName: JIU_GONG['2'].name,
+                                    gongNumber: '二',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['2'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['2'] : '丁',
+                                    diZhi: qimen.anGan ? qimen.anGan['2'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('2'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '2',
+                                    isZhiShi: qimen.zhiShiGong === '2',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '2',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <!-- B. 第二行 - 3,5,7 -->
+                            <div class="gong gong3 <%= qimen.jiuGongAnalysis[3] && qimen.jiuGongAnalysis[3].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '3' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '3' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['3'] : '',
+                                    directionWuxing: JIU_GONG['3'].direction + ' ' + JIU_GONG['3'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['3'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['3'] : '',
+                                    gongName: JIU_GONG['3'].name,
+                                    gongNumber: '三',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['3'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['3'] : '丙',
+                                    diZhi: qimen.anGan ? qimen.anGan['3'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('3'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '3',
+                                    isZhiShi: qimen.zhiShiGong === '3',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '3',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                         <!-- ====================== 中宮（五宮） - 文字小 + 置中空白位置 ====================== -->
+<div class="gong gong5 ping <%= qimen.zhiFuGong === '5' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '5' ? 'zhishi' : '' %>"
+     style="position:relative;">
+
+ <div style="position: absolute;vertical-align: : center;align-content: :center; width:100%; text-align:center; font-size:11px; line-height:1.4; color:#333; padding:0px 0px; border-radius:0px;">
+        <strong>局數：</strong><%= qimen.juShu && qimen.juShu.fullName %><br>
+        <strong>值符：</strong><%= qimen.zhiFuXing  %><br>
+        <strong>值使：</strong><%= qimen.zhiShiMen  %>
+    </div>
+
+    <%- include('standardGongTemplate', {
+        baShen: qimen.baShen ? qimen.baShen['5'] : '',
+        directionWuxing: JIU_GONG['5'].direction + ' ' + qimen.juShu + JIU_GONG['5'].element,
+        baMen: qimen.baMen ? qimen.baMen['5'] : '',
+        jiuXing: qimen.jiuXing ? qimen.jiuXing['5'] : '',
+        gongName: JIU_GONG['5'].name,
+        gongNumber: '五',
+        tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['5'] : '',
+        diPan: qimen.diPan ? qimen.diPan['5'] : '戊',
+        diZhi: qimen.anGan ? qimen.anGan['5'] : '',
+        tianGanFang: '',
+        showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('5'),
+        emptyType: 'yellow',
+        emptyContent: '空',
+        isZhiFu: qimen.zhiFuGong === '5',
+        isZhiShi: qimen.zhiShiGong === '5',
+        showMaStar: qimen.maStar && qimen.maStar.gong === '5',
+        dayXunShou: qimen.dayXunShou
+    }) %>
+
+    <!-- 小字置中顯示（完全在五宮空白中間） -->
+    
+</div>
+
+                            <div class="gong gong7 <%= qimen.jiuGongAnalysis[7] && qimen.jiuGongAnalysis[7].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '7' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '7' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['7'] : '',
+                                    directionWuxing: JIU_GONG['7'].direction + ' ' + JIU_GONG['7'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['7'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['7'] : '',
+                                    gongName: JIU_GONG['7'].name,
+                                    gongNumber: '七',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['7'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['7'] : '庚',
+                                    diZhi: qimen.anGan ? qimen.anGan['7'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('7'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '7',
+                                    isZhiShi: qimen.zhiShiGong === '7',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '7',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <!-- C. 第三行 - 8,1,6 -->
+                            <div class="gong gong8 <%= qimen.jiuGongAnalysis[8] && qimen.jiuGongAnalysis[8].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '8' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '8' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['8'] : '',
+                                    directionWuxing: JIU_GONG['8'].direction + ' ' + JIU_GONG['8'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['8'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['8'] : '',
+                                    gongName: JIU_GONG['8'].name,
+                                    gongNumber: '八',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['8'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['8'] : '辛',
+                                    diZhi: qimen.anGan ? qimen.anGan['8'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('8'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '8',
+                                    isZhiShi: qimen.zhiShiGong === '8',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '8',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <div class="gong gong1 <%= qimen.jiuGongAnalysis[1] && qimen.jiuGongAnalysis[1].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '1' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '1' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['1'] : '',
+                                    directionWuxing: JIU_GONG['1'].direction + ' ' + JIU_GONG['1'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['1'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['1'] : '',
+                                    gongName: JIU_GONG['1'].name,
+                                    gongNumber: '一',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['1'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['1'] : '戊',
+                                    diZhi: qimen.anGan ? qimen.anGan['1'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('1'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '1',
+                                    isZhiShi: qimen.zhiShiGong === '1',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '1',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+
+                            <div class="gong gong6 <%= qimen.jiuGongAnalysis[6] && qimen.jiuGongAnalysis[6].jiXiong || 'ping' %> <%= qimen.zhiFuGong === '6' ? 'zhifu' : '' %> <%= qimen.zhiShiGong === '6' ? 'zhishi' : '' %>">
+                                <%- include('standardGongTemplate', {
+                                    baShen: qimen.baShen ? qimen.baShen['6'] : '',
+                                    directionWuxing: JIU_GONG['6'].direction + ' ' + JIU_GONG['6'].element,
+                                    baMen: qimen.baMen ? qimen.baMen['6'] : '',
+                                    jiuXing: qimen.jiuXing ? qimen.jiuXing['6'] : '',
+                                    gongName: JIU_GONG['6'].name,
+                                    gongNumber: '六',
+                                    tianPan: qimen.sanQiLiuYi ? qimen.sanQiLiuYi['6'] : '',
+                                    diPan: qimen.diPan ? qimen.diPan['6'] : '己',
+                                    diZhi: qimen.anGan ? qimen.anGan['6'] : '',
+                                    tianGanFang: '',
+                                    showEmptyCircle: qimen.kongWangGong && qimen.kongWangGong.includes('6'),
+                                    emptyType: 'yellow',
+                                    emptyContent: '空',
+                                    isZhiFu: qimen.zhiFuGong === '6',
+                                    isZhiShi: qimen.zhiShiGong === '6',
+                                    showMaStar: qimen.maStar && qimen.maStar.gong === '6',
+                                    dayXunShou: qimen.dayXunShou
+                                }) %>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!--
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">分析与建议</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>值符:<strong><%= qimen.zhiFuGong || '5' %>宫(<%= (qimen.jiuGongAnalysis[qimen.zhiFuGong] && qimen.jiuGongAnalysis[qimen.zhiFuGong].gongName) || '中' %>)</strong>, 值使:<strong><%= qimen.zhiShiGong || '5' %>宫(<%= (qimen.jiuGongAnalysis[qimen.zhiShiGong] && qimen.jiuGongAnalysis[qimen.zhiShiGong].gongName) || '中' %>)</strong></p>
+
+                        <% if (qimen.analysis && qimen.analysis.bestGong && qimen.jiuGongAnalysis[qimen.analysis.bestGong]) { %>
+                            <p>最有利方位: <strong><%= qimen.jiuGongAnalysis[qimen.analysis.bestGong].direction || '' %>(<%= qimen.jiuGongAnalysis[qimen.analysis.bestGong].gongName || '' %>宫)</strong></p>
+                        <% } %>
+
+                        <% if (qimen.analysis && qimen.analysis.suggestions && Array.isArray(qimen.analysis.suggestions)) { %>
+                        <strong>建议:</strong>
+                        <ul class="suggestion-list">
+                            <% qimen.analysis.suggestions.forEach(function(suggestion) { %>
+                                <li><%= suggestion %></li>
+                            <% }); %>
+                        </ul>
+                        <% } else { %>
+                        <p>暂无建议</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+
+        <!-- <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">九宫详解</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="gong-details">
+                            <% if (qimen.jiuGongAnalysis) { %>
+                            <% for (let i = 1; i <= 9; i++) { %>
+                                <% if (qimen.jiuGongAnalysis[i]) { %>
+                                <div class="col-md-4">
+                                    <div class="panel panel-<%= qimen.jiuGongAnalysis[i].jiXiong && qimen.jiuGongAnalysis[i].jiXiong.includes('ji') ? 'success' : qimen.jiuGongAnalysis[i].jiXiong === 'ping' ? 'info' : 'danger' %>">
+                                        <div class="panel-heading">
+                                            <h4 class="panel-title"><%= i %>-<%= qimen.jiuGongAnalysis[i].gongName || '' %>
+                                            <span class="pull-right label label-<%= qimen.jiuGongAnalysis[i].jiXiong && qimen.jiuGongAnalysis[i].jiXiong.includes('ji') ? 'success' : qimen.jiuGongAnalysis[i].jiXiong === 'ping' ? 'default' : 'danger' %>">
+                                                <%= qimen.jiuGongAnalysis[i].jiXiongText || '平' %>
+                                            </span>
+                                            </h4>
+                                        </div>
+                                        <div class="panel-body">
+                                            <p><strong>方位:</strong> <%= qimen.jiuGongAnalysis[i].direction || '' %>
+                                            <strong>九星:</strong> <%= qimen.jiuGongAnalysis[i].xing || '' %><% if (qimen.jiuGongAnalysis[i].xingAlias) { %>(<%= qimen.jiuGongAnalysis[i].xingAlias %>)<% } %></p>
+                                            <% if (qimen.jiuGongAnalysis[i].men) { %>
+                                                <p><strong>八门:</strong> <%= qimen.jiuGongAnalysis[i].men %>
+                                            <% } %>
+                                            <% if (qimen.jiuGongAnalysis[i].shen) { %>
+                                                <strong>八神:</strong> <%= qimen.jiuGongAnalysis[i].shen %></p>
+                                            <% } %>
+                                            <p><strong>三奇六仪:</strong> <%= qimen.sanQiLiuYi && qimen.sanQiLiuYi[i] || '' %></p>
+                                            <p class="gong-explain"><%= qimen.jiuGongAnalysis[i].explain || '暂无解释' %></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% } %>
+                            <% } %>
+                            <% } else { %>
+                            <div class="col-md-12">
+                                <p class="text-center">暂无九宫分析数据</p>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        -->
+    </div>
+
+    <!-- 自定义排盘模态框 -->
+    <div class="modal fade" id="customPanModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">自定义排盘</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="customPanForm" action="/custom" method="get">
+                        <div class="form-group">
+                            <label for="type">排盘类型</label>
+                            <select class="form-control" id="type" name="type">
+                                <option value="四柱">拆補</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="method">排盘方法</label>
+                            <select class="form-control" id="method" name="method">
+                                <option value="时家">时家奇门</option>
+                                <!--
+                                <option value="日家">日家奇门</option>
+                                <option value="月家">月家奇门</option>
+                                <option value="年家">年家奇门</option>
+                                -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="date">日期</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="time">时间</label>
+                            <input type="time" class="form-control" id="time" name="time" required>
+                        </div>
+                        <!--
+                        <div class="form-group">
+                            <label for="location">地点</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="如：北京市">
+                        </div>
+                        <div class="form-group">
+                            <label for="purpose">目的</label>
+                            <select class="form-control" id="purpose" name="purpose">
+                                <option value="综合">综合分析</option>
+                                <option value="事业">事业</option>
+                                <option value="财运">财运</option>
+                                <option value="婚姻">婚姻</option>
+                                <option value="健康">健康</option>
+                                <option value="学业">学业</option>
+                            </select>
+                        </div>
+                        -->
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="submitCustomPan">排盘</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 使用说明模态框 -->
+    <div class="modal fade" id="helpModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">奇门遁甲使用说明</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>奇门遁甲简介</h4>
+                            <p>奇门遁甲是中国古代预测学的一种，与六壬、太乙合称三式。它通过天地之气的运行规律，推算各种事物的吉凶。</p>
+
+                            <h4>基本要素</h4>
+                            <ul>
+                                <li><strong>三奇六仪:</strong> 三奇指戊己庚三个天干，六仪指辛壬癸丁丙乙</li>
+                                <li><strong>八门:</strong> 指休、生、伤、杜、景、死、惊、开八门</li>
+                                <li><strong>九星:</strong> 指天蓬、天芮、天冲、天辅、天禽、天英、天柱、天任、天心九颗星</li>
+                                <li><strong>八神:</strong> 指值符、腾蛇、太阴、六合、白虎、玄武、九地、九天八种神煞</li>
+                                <li><strong>值符值使:</strong> 值符为九星之首，值使为八门之首</li>
+                            </ul>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h4>排盘方法说明</h4>
+                            <ul>
+                                <li><strong>四柱:</strong> 分别取年、月、日、时四柱</li>
+                                <li><strong>三元:</strong> 只取年、月、日三柱</li>
+                                <li><strong>时家奇门:</strong> 以时辰排盘，适合短期预测</li>
+                                <li><strong>日家奇门:</strong> 以日子排盘，适合中期预测</li>
+                                <li><strong>月家奇门:</strong> 以月份排盘，适合长期预测</li>
+                                <li><strong>年家奇门:</strong> 以年份排盘，适合长期预测</li>
+                            </ul>
+
+                            <h4>吉凶判断</h4>
+                            <p>在奇门遁甲中，吉凶判断主要基于以下因素:</p>
+                            <ul>
+                                <li>值符、值使落宫的吉凶</li>
+                                <li>宫位中九星、八门、八神的组合</li>
+                                <li>八门的性质: 休、生、开、景为吉门；伤、杜、死、惊为凶门</li>
+                                <li>九星的属性与作用</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="text-muted">奇门遁甲排盘系统 &copy; 2025</p>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Bootstrap JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/app.js"></script>
+
+
+<!-- ====================== 最終版：轉盤 + 門迫標籤（完全按照 PDF 規則） ====================== -->
+<script>
+    let originalGongs = [];
+    let rotateCount = 0;
+    const outerOrder = [2, 7, 6, 1, 8, 3, 4, 9];
+
+    const xiangYiData = {
+        "休門": "主貴人、休閒、懶、旅遊、美容（吉）",
+        "生門": "主錢財、收入、房產、住宅、土地（吉）",
+        "開門": "主工作、公司、經營、貿易（吉）",
+        "傷門": "主車、受傷、打鬥、賭博、爭鬥、警察、黑社會（凶）",
+        "杜門": "主阻隔、隱藏、困難、阻止、情緒問題（凶）",
+        "景門": "主漂亮、華麗、風景、計劃、文化、血光、名氣（半吉凶）",
+        "死門": "主不開心、死亡、不動、結束、穩固、執著（凶）",
+        "驚門": "主驚慌、擔心、吃驚、官非、口舌是非（凶）",
+
+        "天蓬": "主膽大、妄為、大賊、聰明、智慧、好色、大貪（凶）",
+        "天任": "主擔當、任勞任怨、忠厚、保守、謙虛（吉）",
+        "天沖": "主沖動、易怒、沖擊、快速、猛烈、矛盾、鬥爭（凶）",
+        "天輔": "主輔佐、指導、保護、靠山、關愛、仁慈幫助（吉）",
+        "天英": "主英俊、漂亮、英雄主義、智勇雙全、卓越（吉）",
+        "天芮": "主疾病、問題、學習、桃花、學生、老師、修道（凶）",
+        "天柱": "主破壞、刑傷、好鬥、力挽狂瀾（凶）",
+        "天心": "主核心、管理能力、領袖、政治、醫病（吉）",
+
+        "值符": "主官員、名貴高級、權力、得神庇佑、德高望重（吉）",
+        "騰蛇": "主變化、反覆、纏繞、夢、虛假、驚恐（凶）",
+        "太陰": "主護佑、陰德、喜慶、策劃、隱藏、陰謀詭計（吉）",
+        "六合": "主感情、婚姻、歡樂、祥和、合作（吉）",
+        "白虎": "主辛苦、受傷、爭鬥、困難、官司是非、霸氣（凶）",
+        "玄武": "主虛假、不可靠、頭暈、糊塗、風流、小賊星（凶）",
+        "九地": "主長久、緩慢、地下、柔順、穩定、不動（吉）",
+        "九天": "主天空、打鬥、行軍打仗、上升、遠走高飛（吉）"
+    };
+
+    let tooltip;
+
+    function createTooltip() {
+        tooltip = document.createElement('div');
+        tooltip.style.cssText = `position:fixed; padding:10px 14px; background:#1a1a1a; color:#ffd700; border-radius:8px; font-size:14px; z-index:99999; box-shadow:0 6px 20px rgba(0,0,0,0.8); pointer-events:none; max-width:280px; display:none; white-space:pre-wrap;`;
+        document.body.appendChild(tooltip);
+    }
+
+    function addFastHover() {
+        const grid = document.querySelector('.pan-grid');
+        if (!grid) return;
+
+        grid.addEventListener('mousemove', function(e) {
+            const gong = e.target.closest('.gong');
+            if (!gong) return;
+
+            const text = (gong.innerText || gong.textContent || '').trim();
+            let tooltipText = '';
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;
+                }
+            }
+            if (tooltipText) {
+                tooltip.textContent = tooltipText;
+                tooltip.style.left = (e.clientX + 18) + 'px';
+                tooltip.style.top = (e.clientY + 18) + 'px';
+                tooltip.style.display = 'block';
+            }
+        });
+
+        grid.addEventListener('mouseleave', function() {
+            tooltip.style.display = 'none';
+        });
+    }
+
+    /*
+    // 門迫標籤（完全按照你 PDF 表格規則）
+    function addMenPoTags() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach(gong => {
+            const text = (gong.innerText || gong.textContent || '').trim();
+
+            // 清空舊標籤
+            gong.querySelectorAll('.harm-tag').forEach(tag => tag.remove());
+
+            let html = '';
+
+            // PDF 表格精準規則
+            if ((text.includes('生门') || text.includes('死门')) && text.includes('一')) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;position:absolute;50px;right:4px;z-index:10;">門迫</span>`;
+            if ((text.includes('伤门') || text.includes('杜门')) && (text.includes('二') || text.includes('八'))) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;position:absolute;top:50px;right:4px;z-index:10;">門迫</span>`;
+            if ((text.includes('惊门') || text.includes('開门')) && (text.includes('三') || text.includes('四'))) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;position:absolute;top:50px;right:4px;z-index:10;">門迫</span>`;
+            if (text.includes('景门') && (text.includes('六') || text.includes('七'))) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;position:absolute;top:50px;right:4px;z-index:10;">門迫</span>`;
+            if (text.includes('休门') && text.includes('九')) html += `<span class="harm-tag" style="background:#c00;color:white;font-size:11px;padding:2px 6px;border-radius:3px;position:absolute;top:50px;right:4px;z-index:10;">門迫</span>`;
+
+            if (html) {
+                gong.style.position = 'relative';
+                gong.insertAdjacentHTML('beforeend', html);
+            }
+        });
+    }
+    */
+
+    function initGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        originalGongs = Array.from(gongs).map(gong => gong.innerHTML);
+    }
+
+    function rotateSequence() {
+        if (originalGongs.length === 0) initGongs();
+        rotateCount = (rotateCount + 1) % 8;
+
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        const temp = [...originalGongs];
+
+        let outerValues = outerOrder.map(num => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            return originalGongs[index];
+        });
+
+        for (let i = 0; i < rotateCount; i++) {
+            outerValues.unshift(outerValues.pop());
+        }
+
+        outerOrder.forEach((num, i) => {
+            const index = Array.from(gongs).findIndex(g => g.classList.contains('gong' + num));
+            if (index !== -1) temp[index] = outerValues[i];
+        });
+
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = temp[index];
+        });
+
+        setTitleOnGongs();
+        addMenPoTags();
+
+        alert(`✅ 已順序轉盤 1 次（中宮固定不動）`);
+    }
+
+    function resetRotate() {
+        rotateCount = 0;
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach((gong, index) => {
+            gong.innerHTML = originalGongs[index];
+        });
+        setTitleOnGongs();
+        addMenPoTags();
+        alert('✅ 轉盤已完全重置');
+    }
+
+    function setTitleOnGongs() {
+        const gongs = document.querySelectorAll('.pan-grid .gong');
+        gongs.forEach(gong => {
+            const text = (gong.innerText || gong.textContent || '').trim();
+            let tooltipText = '';
+            for (let key in xiangYiData) {
+                if (text.includes(key)) {
+                    tooltipText = xiangYiData[key];
+                    break;
+                }
+            }
+            if (tooltipText) gong.setAttribute('title', tooltipText);
+        });
+    }
+
+    window.addEventListener('load', () => {
+        initGongs();
+        setTitleOnGongs();
+        addMenPoTags();
+    });
+</script>
+<!-- ====================== 最終版結束 ====================== -->
+                                
+</body>
+
+</html>
